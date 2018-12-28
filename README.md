@@ -1,16 +1,19 @@
-# miu_puzzle
+# MIU Puzzle
 
 This is a mobile app (game) for the [MIU Puzzle](https://en.wikipedia.org/wiki/MU_puzzle) as described in Douglas Hofstadter's _[Gödel, Escher, Bach: an Eternal Golden Braid](https://en.wikipedia.org/wiki/G%C3%B6del,_Escher,_Bach)_ book.
 
 Note, this is rather pointless (in terms of being able to solve the puzzle :), and was just a way to try out Flutter and Dart.
 
-## Getting Started
+## Use/Build
 
-This mobile app is built using [Flutter](https://flutter.io).
+The mobile app was developed using the [Flutter](https://flutter.io) framework, which uses the [Dart](https://www.dartlang.org/) language.
 
-Open it in Android Studio and run for your chosen mobile device.
+Build it in Android Studio and run for your chosen mobile device.
 
-## My Personal Notes on Using Flutter
+Note, when using the iOS Simulator, rotate the device after starting it (this will be done automatically for Android devices).
+
+
+## Some Personal Notes on Using Flutter
 
 * The most critical thing to note right off is that Flutter does nothing to make your app appear native on the respective platform. It uses Material by default, which clearly is NOT what an iOS app should look like. So, that works great on Android, but not good for iOS. You can use the Cupertino widgets to make it look like iOS, but now either your Android app looks wrong, or you're going to need to write conditional logic (or similar) to pick the proper widget based on platform. And it should be noted that the corresponding widgets don't always use the same property names, so you can't as easily generic/template it. [This article](https://medium.com/flutter-io/do-flutter-apps-dream-of-platform-aware-widgets-7d7ed7b4624d) covers one way to create factory widgets that create the proper widget, and the comments on the article discuss some of Flutter's philosophy and issues around all this.
     * Depending on the app you're building, this could work out fine, if you are say doing a lot of very custom visual presentation of things (with then maybe minor use of native items for popup alerts or similar). This seems to be Flutter's intent too.
