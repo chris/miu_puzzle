@@ -1,16 +1,10 @@
 # miu_puzzle
 
-MIU Puzzle game mobile app.
+This is a mobile app (game) for the [MIU Puzzle](https://en.wikipedia.org/wiki/MU_puzzle) as described in Douglas Hofstadter's _[Gödel, Escher, Bach: an Eternal Golden Braid](https://en.wikipedia.org/wiki/G%C3%B6del,_Escher,_Bach)_ book.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This mobile app is built using [Flutter](https://flutter.io).
 
-A few resources to get you started if this is your first Flutter project:
+Open it in Android Studio and run for your chosen mobile device.
 
-- [Lab: Write your first Flutter app](https://flutter.io/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.io/docs/cookbook)
-
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.io/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
