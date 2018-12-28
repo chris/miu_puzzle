@@ -151,9 +151,6 @@ class _GameState extends State<GamePage> {
         child: Text(letter, style: _letterStyle),
         color: index == _selectedLetter ? Colors.orange : Colors.white,
         onPressed: () {
-          debugPrint("Got letter press for $index, $letter.");
-
-          // if same index as already selected, then we need to apply the rule
           if (_selectedLetter == index) {
             setState(() {
               _priorState = _puzzleState.clone();
