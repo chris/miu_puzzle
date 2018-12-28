@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 import 'puzzle_state.dart';
 
 void main() => runApp(MIUApp());
@@ -9,7 +11,7 @@ class MIUApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MIU Puzzle',
+      title: "MIU Puzzle",
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -22,7 +24,7 @@ class MIUApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.orange,
       ),
-      home: GamePage(title: 'MIU Puzzle'),
+      home: GamePage(title: "MIU Puzzle"),
     );
   }
 }
@@ -51,7 +53,35 @@ class _GameState extends State<GamePage> {
   int _selectedLetter;
   Rule _applicableRule;
   final _letterStyle = const TextStyle(fontSize: 32.0);
-  final _rulesTextStyle = const TextStyle(fontSize: 24.0);
+  final _ruleTextStyle = const TextStyle(fontSize: 24.0);
+  final _selectedRuleTextStyle = const TextStyle(
+      color: Colors.deepOrange,
+      fontSize: 24.0,
+      fontWeight: FontWeight.bold,
+      fontStyle: FontStyle.italic);
+  final _instructionTextStyle = const TextStyle(fontSize: 18.0);
+
+  // force landscape mode
+  // Note that for the iOS simulator, you'll still have to rotate the device first
+  @override
+  void initState() {
+    super.initState();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+    ]);
+  }
+
+  @override
+  dispose() {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.landscapeRight,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,11 +118,7 @@ class _GameState extends State<GamePage> {
   }
 
   Widget _buildTopRow() {
-    return Row(children: [
-      _buildResetButton(),
-      _buildUndoButton(),
-      Expanded(child: _buildRules()),
-    ]);
+    return _buildRules();
   }
 
   Widget _buildResetButton() {
@@ -123,25 +149,32 @@ class _GameState extends State<GamePage> {
   }
 
   Widget _buildRules() {
-    var ruleName;
-    switch (_applicableRule) {
-      case Rule.one:
-        ruleName = "Rule I";
-        break;
-      case Rule.two:
-        ruleName = "Rule II";
-        break;
-      case Rule.three:
-        ruleName = "Rule III";
-        break;
-      case Rule.four:
-        ruleName = "Rule IV";
-        break;
-      default:
-        ruleName = "No rule";
-        break;
-    }
-    return Text("$ruleName will be applied.", style: _rulesTextStyle, textAlign: TextAlign.center);
+    return Column(
+      children: [
+        Text("Your goal: transform MI into MU via the rules:",
+            style: const TextStyle(
+              fontSize: 20.0,
+              fontStyle: FontStyle.italic,
+            )),
+        Text(
+          "Rule I: if I is the last letter, add U.",
+          style: _applicableRule == Rule.one ? _selectedRuleTextStyle : _ruleTextStyle,
+        ),
+        Text(
+          "Rule II: M followed by letters, appends letters.",
+          style: _applicableRule == Rule.two ? _selectedRuleTextStyle : _ruleTextStyle,
+        ),
+        Text(
+          "Rule III: III may be replaced by U.",
+          style: _applicableRule == Rule.three ? _selectedRuleTextStyle : _ruleTextStyle,
+        ),
+        Text(
+          "Rule IV: UU can be dropped.",
+          style: _applicableRule == Rule.four ? _selectedRuleTextStyle : _ruleTextStyle,
+        ),
+      ],
+      crossAxisAlignment: CrossAxisAlignment.start,
+    );
   }
 
   Widget _buildStringView() {
@@ -178,14 +211,29 @@ class _GameState extends State<GamePage> {
 
     return Container(
       child: ListView(scrollDirection: Axis.horizontal, children: letters),
+      padding: EdgeInsets.symmetric(horizontal: 30),
       height: 100,
     );
   }
 
   Widget _buildInstructions() {
-    return Text(
-      "Tap a letter to select it and see which rule can be applied.",
-    );
+    return Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        child: Row(children: [
+          Expanded(
+            child: Column(
+              children: [
+                Text("Tap a letter to select it and see which rule can be applied.",
+                    style: _instructionTextStyle, textAlign: TextAlign.left),
+                Text("The highlighted rule will be applied upon a tap of the selected letter.",
+                    style: _instructionTextStyle, textAlign: TextAlign.left),
+              ],
+              crossAxisAlignment: CrossAxisAlignment.start,
+            ),
+          ),
+          _buildResetButton(),
+          Padding(padding: EdgeInsets.only(right: 60), child: _buildUndoButton()),
+        ]));
   }
 
   Future<void> _areYouSureDialog(String text, Function yesFunc) async {
