@@ -22,7 +22,7 @@ Take these notes with a big grain of salt :).  I have my biases based on apps fo
 
 The most critical thing to note right off is that Flutter does nothing to make your app appear native on the respective platform. It draws its own widgets. It uses the Material design/style by default, which clearly is NOT what an iOS app should look like. So, that works great on Android, but not good for iOS. You can use the Cupertino widgets to make it look like iOS, but now either your Android app looks wrong, or you're going to need to write conditional logic to pick the proper widget based on platform. And it should be noted that the corresponding widgets don't always use the same property names, so you can't as easily generic/template it. [This article](https://medium.com/flutter-io/do-flutter-apps-dream-of-platform-aware-widgets-7d7ed7b4624d) covers one way to create factory widgets that create the proper widget, and the comments on the article discuss some of Flutter's philosophy and issues around all this. However, it seems that article is out of date, because the base class types of things like app bars and scaffolds vary considerably between the Material and Cupertino types - e.g. the things those return (such as the app bars) are not actually `Widget` types, but instead `PreferredSizeWidget` (or a subclass), so the abstract class factory doesn't work since it's base type is `Widget` and the scaffolds, etc. expect the more specific type. This led to me looking at doing a more specific factory for this case, or really, just the following code:
 
-```
+```dart
 final body = Center(
   child: Column(
     mainAxisAlignment: MainAxisAlignment.center,
