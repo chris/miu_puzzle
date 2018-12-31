@@ -222,26 +222,41 @@ class _GameState extends State<GamePage> {
   }
 
   Future<void> _areYouSureDialog(String text, Function yesFunc) async {
+    var onYesPress = () => Navigator.pop(context, "yes");
+    var onNoPress = () => Navigator.pop(context, "no");
+
     switch (await showDialog<String>(
         context: context,
         builder: (BuildContext context) {
-          return SimpleDialog(
-            title: Text(text),
-            children: <Widget>[
-              SimpleDialogOption(
-                onPressed: () {
-                  Navigator.pop(context, "yes");
-                },
-                child: const Text('Yes'),
+          if (Platform.isIOS) {
+            return CupertinoAlertDialog(content: Text(text), actions: <Widget>[
+              CupertinoDialogAction(
+                child: const Text("Yes"),
+                isDestructiveAction: true,
+                onPressed: onYesPress,
               ),
-              SimpleDialogOption(
-                onPressed: () {
-                  Navigator.pop(context, "no");
-                },
-                child: const Text('No'),
+              CupertinoDialogAction(
+                child: const Text("No"),
+                isDefaultAction: true,
+                isDestructiveAction: true,
+                onPressed: onNoPress,
               ),
-            ],
-          );
+            ]);
+          } else {
+            return SimpleDialog(
+              title: Text(text),
+              children: <Widget>[
+                SimpleDialogOption(
+                  child: const Text('Yes'),
+                  onPressed: onYesPress,
+                ),
+                SimpleDialogOption(
+                  child: const Text('No'),
+                  onPressed: onNoPress,
+                ),
+              ],
+            );
+          }
         })) {
       case "yes":
         setState(yesFunc);
