@@ -50,6 +50,8 @@ throw "Unsupported Platform";
 
 ```
 
+Or, see the example in the code at the bottom of main.dart, where it uses an iOS specific alert dialog on iOS (and Material style on all other).
+
 The above works, and seems relatively compact. But you'd definitely want the generics-based approach or similar if you were going to do that all over. And it turns out, you'd really pretty much have to do it for a ton of widgets, because things like `IconButton` don't exist in Cupertino, and they require having a Material based enclosing layout/container to even work (so, when using the above scaffold/page on iOS, IconButtons within the app don't work).
 
 Thus, my take is that Flutter is not necessarily saving you much in terms of writing a single app that works across multiple platforms. Yes, you can certainly keep all your logic and data management platform agnostic, but you're most likely going to be writing all the UI/UX as separate code for each platform, unless you're ok having one of the platforms not look "correct".
