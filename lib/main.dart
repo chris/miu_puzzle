@@ -4,6 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'puzzle_state.dart';
+import 'login_signup_page.dart';
+import 'auth.dart';
+
+enum AuthStatus {
+  NOT_DETERMINED,
+  NOT_LOGGED_IN,
+  LOGGED_IN,
+}
 
 void main() => runApp(MIUApp());
 
@@ -43,12 +51,15 @@ class GamePage extends StatefulWidget {
   // always marked "final".
 
   final String title;
+  final Auth auth = Auth();
 
   @override
   _GameState createState() => _GameState();
 }
 
 class _GameState extends State<GamePage> {
+  AuthStatus authStatus = AuthStatus.NOT_DETERMINED;
+  String _userId;
   PuzzleState _puzzleState = PuzzleState();
   PuzzleState _priorState;
   int _selectedLetter;
@@ -71,6 +82,15 @@ class _GameState extends State<GamePage> {
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
     ]);
+
+    widget.auth.getCurrentUser().then((user) {
+      setState(() {
+        if (user != null) {
+          _userId = user?.uid;
+        }
+        authStatus = user?.uid == null ? AuthStatus.NOT_LOGGED_IN : AuthStatus.LOGGED_IN;
+      });
+    });
   }
 
   @override
@@ -84,6 +104,36 @@ class _GameState extends State<GamePage> {
     super.dispose();
   }
 
+  void _onLoggedIn() {
+    widget.auth.getCurrentUser().then((user) {
+      setState(() {
+        _userId = user.uid.toString();
+      });
+    });
+    setState(() {
+      authStatus = AuthStatus.LOGGED_IN;
+    });
+
+    Navigator.pop(context);
+  }
+
+  void _onSignedOut() {
+    setState(() {
+      authStatus = AuthStatus.NOT_LOGGED_IN;
+      _userId = null;
+    });
+  }
+
+  _showAuth() {
+    Navigator.of(context).push(MaterialPageRoute<void>(builder: (BuildContext context) {
+      return LoginSignupPage(auth: widget.auth, onSignedIn: _onLoggedIn);
+    }));
+  }
+
+  _logout() {
+    setState(() => _userId = null);
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called.
@@ -92,7 +142,13 @@ class _GameState extends State<GamePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(title: Text(widget.title), actions: [
+        IconButton(
+          icon: Icon(Icons.account_circle),
+          color: _userId == null ? Colors.grey : Colors.black,
+          onPressed: _userId == null ? _showAuth : _logout,
+        ),
+      ]),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

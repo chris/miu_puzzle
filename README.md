@@ -6,7 +6,7 @@ Note, this is rather pointless (in terms of being able to solve the puzzle :), a
 
 ## Use/Build
 
-The mobile app was developed using the [Flutter](https://flutter.io) framework, which uses the [Dart](https://www.dartlang.org/) language.
+The mobile app was developed using the [Flutter](https://flutter.io) framework, which uses the [Dart](https://www.dartlang.org/) language. It also use Firebase services for auth and database. You will need to add your own google-services.json and GoogleService-Info.plist files to use your own Firebase account.
 
 Build it in Android Studio and run for your chosen mobile device.
 
