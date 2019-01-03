@@ -5,6 +5,7 @@ enum Rule { none, one, two, three, four }
 /// applying a rule at a given location (mutating the state).
 class PuzzleState {
   String _state = "MI";
+  String _priorState;
 
   static const noRule = 0; // no rule applies
   static const rule1 = 1; // last letter is I
@@ -15,6 +16,10 @@ class PuzzleState {
   PuzzleState();
 
   PuzzleState.fromString(this._state);
+
+  PuzzleState.deSerialize(Map<String, dynamic> serializedData)
+      : _state = serializedData["currentState"],
+        _priorState = serializedData["priorState"];
 
   @override
   String toString() => _state;
@@ -71,6 +76,8 @@ class PuzzleState {
   void applyRuleAt(int position) {
     final ruleInfo = applicableRuleAt(position);
 
+    _priorState = _state;
+
     switch (ruleInfo["rule"]) {
       case Rule.one:
         // Add U to end of string
@@ -89,6 +96,19 @@ class PuzzleState {
       default:
         break;
     }
+  }
+
+  bool canUndo() => _priorState != null;
+
+  undo() {
+    assert(canUndo());
+
+    _state = _priorState;
+    _priorState = null;
+  }
+
+  serialize() {
+    return {"currentState": _state, "priorState": _priorState};
   }
 
   /// Gets a substring of our state string, from start (inclusive), to end (inclusive - note that

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'puzzle_state.dart';
 import 'login_signup_page.dart';
 import 'auth.dart';
+import 'database.dart';
 
 enum AuthStatus {
   NOT_DETERMINED,
@@ -61,7 +62,7 @@ class _GameState extends State<GamePage> {
   AuthStatus authStatus = AuthStatus.NOT_DETERMINED;
   String _userId;
   PuzzleState _puzzleState = PuzzleState();
-  PuzzleState _priorState;
+  Database _db;
   int _selectedLetter;
   Rule _applicableRule;
   final _letterStyle = const TextStyle(fontSize: 32.0);
@@ -87,6 +88,8 @@ class _GameState extends State<GamePage> {
       setState(() {
         if (user != null) {
           _userId = user?.uid;
+          _db = Database(_userId);
+          _db.watch(_onDataChange);
         }
         authStatus = user?.uid == null ? AuthStatus.NOT_LOGGED_IN : AuthStatus.LOGGED_IN;
       });
@@ -104,10 +107,12 @@ class _GameState extends State<GamePage> {
     super.dispose();
   }
 
-  void _onLoggedIn() {
+  void _onLogin() {
     widget.auth.getCurrentUser().then((user) {
       setState(() {
         _userId = user.uid.toString();
+        _db = Database(_userId);
+        _db.watch(_onDataChange);
       });
     });
     setState(() {
@@ -117,21 +122,35 @@ class _GameState extends State<GamePage> {
     Navigator.pop(context);
   }
 
-  void _onSignedOut() {
-    setState(() {
-      authStatus = AuthStatus.NOT_LOGGED_IN;
-      _userId = null;
+  void _onSignup() {
+    widget.auth.getCurrentUser().then((user) {
+      // Setup their initial game record in the DB
+      Database(user.uid.toString()).createGame();
     });
+
+    _onLogin();
   }
 
   _showAuth() {
     Navigator.of(context).push(MaterialPageRoute<void>(builder: (BuildContext context) {
-      return LoginSignupPage(auth: widget.auth, onSignedIn: _onLoggedIn);
+      return LoginSignupPage(auth: widget.auth, onLogin: _onLogin, onSignup: _onSignup);
     }));
   }
 
   _logout() {
-    setState(() => _userId = null);
+    setState(() {
+      authStatus = AuthStatus.NOT_LOGGED_IN;
+      _db.stopWatching();
+      _db = null;
+      _userId = null;
+    });
+  }
+
+  _onDataChange(data) {
+    print("Got data change with data: ${data.data}");
+    setState(() {
+      _puzzleState = PuzzleState.deSerialize(data.data);
+    });
   }
 
   @override
@@ -145,8 +164,8 @@ class _GameState extends State<GamePage> {
       appBar: AppBar(title: Text(widget.title), actions: [
         IconButton(
           icon: Icon(Icons.account_circle),
-          color: _userId == null ? Colors.grey : Colors.black,
-          onPressed: _userId == null ? _showAuth : _logout,
+          color: authStatus == AuthStatus.LOGGED_IN ? Colors.black : Colors.grey,
+          onPressed: authStatus == AuthStatus.LOGGED_IN ? _logout : _showAuth,
         ),
       ]),
       body: Center(
@@ -176,17 +195,15 @@ class _GameState extends State<GamePage> {
 
   Widget _buildUndoButton() {
     return IconButton(
-      icon: Icon(Icons.undo),
-      tooltip: 'Undo last move.',
-      onPressed: _priorState == null
-          ? null
-          : () {
-              setState(() {
-                _puzzleState = _priorState;
-                _priorState = null;
-              });
-            },
-    );
+        icon: Icon(Icons.undo),
+        tooltip: 'Undo last move.',
+        onPressed: _puzzleState.canUndo()
+            ? () {
+                setState(() {
+                  _puzzleState.undo();
+                });
+              }
+            : null);
   }
 
   Widget _buildRules() {
@@ -227,10 +244,10 @@ class _GameState extends State<GamePage> {
         onPressed: () {
           if (_selectedLetter == index) {
             setState(() {
-              _priorState = _puzzleState.clone();
               _puzzleState.applyRuleAt(index);
               _selectedLetter = null;
               _applicableRule = null;
+              Database(_userId).updateGame(_puzzleState);
             });
           } else {
             final ruleInfo = _puzzleState.applicableRuleAt(index);
