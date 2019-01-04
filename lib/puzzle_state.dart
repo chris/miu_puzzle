@@ -4,8 +4,7 @@ enum Rule { none, one, two, three, four }
 /// MIU Puzzle state. Includes methods for determining applicable rules, and
 /// applying a rule at a given location (mutating the state).
 class PuzzleState {
-  String _state = "MI";
-  String _priorState;
+  List<String> _state = ["MI"];
 
   static const noRule = 0; // no rule applies
   static const rule1 = 1; // last letter is I
@@ -15,22 +14,23 @@ class PuzzleState {
 
   PuzzleState();
 
-  PuzzleState.fromString(this._state);
+  PuzzleState.fromString(String str)
+      : assert(str != null && str.isNotEmpty),
+        _state = [str];
 
   PuzzleState.deSerialize(Map<String, dynamic> serializedData)
-      : _state = serializedData["currentState"],
-        _priorState = serializedData["priorState"];
+      : _state = List<String>.from(serializedData["state"]) {}
 
   @override
-  String toString() => _state;
+  String toString() => current;
 
-  PuzzleState clone() => PuzzleState.fromString(_state);
+  bool isInitialState() => _state == ["MI"];
 
-  bool isInitialState() => _state == "MI";
+  get current => _state.last;
 
-  get lastPosition => _state.length - 1;
+  get lastPosition => current.length - 1;
 
-  get letterMap => _state.split("").asMap();
+  get letterMap => current.split("").asMap();
 
   /// Determine what rule (if any) is applicable to the letter at the given position.
   /// Returns [Map] with rule, start, and end keys. rule is the [Rule], start is the first position
@@ -39,7 +39,7 @@ class PuzzleState {
   /// { "rule": Rule.three, "start": 1, "end": 3 }
   /// If no rule matches it returns {"rule": Rule.none, "start": 0, "end": 0}.
   Map applicableRuleAt(int position) {
-    final letter = _state[position];
+    final letter = current[position];
 
     switch (letter) {
       case "I":
@@ -76,39 +76,36 @@ class PuzzleState {
   void applyRuleAt(int position) {
     final ruleInfo = applicableRuleAt(position);
 
-    _priorState = _state;
-
     switch (ruleInfo["rule"]) {
       case Rule.one:
         // Add U to end of string
-        _state += "U";
+        _state.add(current + "U");
         break;
       case Rule.two:
         // Append x of Mx
-        _state += _state.substring(position + 1);
+        _state.add(current + current.substring(position + 1));
         break;
       case Rule.three:
-        _state = _state.replaceRange(ruleInfo["start"], ruleInfo["end"] + 1, "U");
+        _state.add(current.replaceRange(ruleInfo["start"], ruleInfo["end"] + 1, "U"));
         break;
       case Rule.four:
-        _state = _state.replaceRange(ruleInfo["start"], ruleInfo["end"] + 1, "");
+        _state.add(current.replaceRange(ruleInfo["start"], ruleInfo["end"] + 1, ""));
         break;
       default:
         break;
     }
   }
 
-  bool canUndo() => _priorState != null;
+  bool canUndo() => _state.length > 1;
 
   undo() {
     assert(canUndo());
 
-    _state = _priorState;
-    _priorState = null;
+    _state.removeLast();
   }
 
   serialize() {
-    return {"currentState": _state, "priorState": _priorState};
+    return {"state": _state};
   }
 
   /// Gets a substring of our state string, from start (inclusive), to end (inclusive - note that
@@ -119,6 +116,6 @@ class PuzzleState {
     if (start > lastPosition) return "";
     if (end > lastPosition) end = lastPosition;
 
-    return _state.substring(start, end + 1);
+    return current.substring(start, end + 1);
   }
 }

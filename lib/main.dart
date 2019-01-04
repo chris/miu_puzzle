@@ -125,7 +125,7 @@ class _GameState extends State<GamePage> {
   void _onSignup() {
     widget.auth.getCurrentUser().then((user) {
       // Setup their initial game record in the DB
-      Database(user.uid.toString()).createGame();
+      Database(user.uid.toString()).updateGame(_puzzleState);
     });
 
     _onLogin();
@@ -201,6 +201,7 @@ class _GameState extends State<GamePage> {
             ? () {
                 setState(() {
                   _puzzleState.undo();
+                  _db?.updateGame(_puzzleState);
                 });
               }
             : null);
@@ -247,7 +248,7 @@ class _GameState extends State<GamePage> {
               _puzzleState.applyRuleAt(index);
               _selectedLetter = null;
               _applicableRule = null;
-              Database(_userId).updateGame(_puzzleState);
+              _db?.updateGame(_puzzleState);
             });
           } else {
             final ruleInfo = _puzzleState.applicableRuleAt(index);

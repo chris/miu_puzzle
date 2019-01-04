@@ -9,11 +9,6 @@ class Database {
 
   Database(this._uid);
 
-  createGame() async {
-    await _collection.document(_uid).setData({"currentState": "MI"});
-    print("Created game for UID: $_uid");
-  }
-
   updateGame(PuzzleState state) async {
     await _collection.document(_uid).setData(state.serialize());
   }

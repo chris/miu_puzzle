@@ -4,6 +4,17 @@ This is a mobile app (game) for the [MIU Puzzle](https://en.wikipedia.org/wiki/M
 
 Note, this is rather pointless (in terms of being able to solve the puzzle :), and was just a way to try out Flutter and Dart.
 
+A key note - this is not high quality sample code - I'm just goofing around and trying things out, so there is definite cleanup that's needed, there may be non-idiomatic things (I'm just learning Dart & Flutter), blah blah blah. Read with discretion :)
+
+A few feature notes:
+
+* The current state of the game is in a horizontal scrolling view, drag to scroll it if needed.
+* You can undo all the way back to the start of the game.
+* Signing up will create a user, and save the current state of the game for that user.
+* Logging in just logs in, and will wipe out your current game state (hopefully I'll change this at some point to either prompt, or to ask if you want to replace it, etc.).
+* It uses a Firebase database subscription, such that if you login to two different devices, and play, that play will stay synchronized.
+
+
 ## Use/Build
 
 The mobile app was developed using the [Flutter](https://flutter.io) framework, which uses the [Dart](https://www.dartlang.org/) language. It also use Firebase services for auth and database. You will need to add your own google-services.json and GoogleService-Info.plist files to use your own Firebase account.

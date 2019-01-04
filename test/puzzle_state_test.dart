@@ -115,4 +115,43 @@ void main() {
     state.applyRuleAt(4);
     expect(state.toString(), equals("MIUM"));
   });
+
+  group("undo", () {
+    test("single level basic undo", () {
+      var state = PuzzleState();
+      expect(state.canUndo(), equals(false));
+
+      state.applyRuleAt(0);
+      expect(state.canUndo(), equals(true));
+
+      state.undo();
+      expect(state.canUndo(), equals(false));
+    });
+
+    test("multiple levels of undo", () {
+      var state = PuzzleState();
+      expect(state.canUndo(), equals(false));
+
+      state.applyRuleAt(0);
+      state.applyRuleAt(0);
+      state.applyRuleAt(0);
+      state.applyRuleAt(0);
+
+      expect(state.canUndo(), equals(true));
+
+      state.undo();
+      expect(state.canUndo(), equals(true));
+
+      state.undo();
+      expect(state.canUndo(), equals(true));
+
+      state.applyRuleAt(0);
+      expect(state.canUndo(), equals(true));
+
+      state.undo();
+      state.undo();
+      state.undo();
+      expect(state.canUndo(), equals(false));
+    });
+  });
 }
