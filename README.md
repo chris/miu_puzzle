@@ -7,7 +7,6 @@ Note, this is rather pointless (in terms of being able to solve the puzzle :), a
 A key note - this is not high quality sample code - I'm just goofing around and trying things out, so there is definite cleanup that's needed, there may be non-idiomatic things (I'm just learning Dart & Flutter), blah blah blah. Read with discretion :)
 
 A few feature notes:
-
 * The current state of the game is in a horizontal scrolling view, drag to scroll it if needed.
 * You can undo all the way back to the start of the game.
 * Signing up will create a user, and save the current state of the game for that user.

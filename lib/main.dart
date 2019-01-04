@@ -17,23 +17,19 @@ enum AuthStatus {
 void main() => runApp(MIUApp());
 
 class MIUApp extends StatelessWidget {
+  final lightTheme = ThemeData(primarySwatch: Colors.orange);
+  final darkTheme = ThemeData(
+    brightness: Brightness.dark,
+    primaryColor: Colors.orange,
+    accentColor: Colors.orangeAccent,
+  );
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: "MIU Puzzle",
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
-        primarySwatch: Colors.orange,
-      ),
+      theme: darkTheme,
       home: GamePage(title: "MIU Puzzle"),
     );
   }
@@ -65,13 +61,6 @@ class _GameState extends State<GamePage> {
   Database _db;
   int _selectedLetter;
   Rule _applicableRule;
-  final _letterStyle = const TextStyle(fontSize: 32.0);
-  final _ruleTextStyle = const TextStyle(fontSize: 24.0);
-  final _selectedRuleTextStyle = const TextStyle(
-      color: Colors.deepOrange,
-      fontSize: 24.0,
-      fontWeight: FontWeight.bold,
-      fontStyle: FontStyle.italic);
   final _instructionTextStyle = const TextStyle(fontSize: 18.0);
 
   // force landscape mode
@@ -188,7 +177,10 @@ class _GameState extends State<GamePage> {
       onPressed: _puzzleState.isInitialState()
           ? null
           : () async {
-              await _areYouSureDialog("Start over?", () => _puzzleState = PuzzleState());
+              await _areYouSureDialog("Start over?", () {
+                _puzzleState = PuzzleState();
+                _db?.updateGame(_puzzleState);
+              });
             },
     );
   }
@@ -208,40 +200,53 @@ class _GameState extends State<GamePage> {
   }
 
   Widget _buildRules() {
-    return Column(
-      children: [
-        Text("Your goal: transform MI into MU via the rules:",
-            style: const TextStyle(
-              fontSize: 20.0,
-              fontStyle: FontStyle.italic,
-            )),
-        Text(
-          "Rule I: if I is the last letter, add U.",
-          style: _applicableRule == Rule.one ? _selectedRuleTextStyle : _ruleTextStyle,
-        ),
-        Text(
-          "Rule II: M followed by letters, appends letters.",
-          style: _applicableRule == Rule.two ? _selectedRuleTextStyle : _ruleTextStyle,
-        ),
-        Text(
-          "Rule III: III may be replaced by U.",
-          style: _applicableRule == Rule.three ? _selectedRuleTextStyle : _ruleTextStyle,
-        ),
-        Text(
-          "Rule IV: UU can be dropped.",
-          style: _applicableRule == Rule.four ? _selectedRuleTextStyle : _ruleTextStyle,
-        ),
-      ],
-      crossAxisAlignment: CrossAxisAlignment.start,
-    );
+    final _ruleTextStyle = const TextStyle(fontSize: 24.0);
+    final _selectedRuleTextStyle = TextStyle(
+        color: Theme.of(context).accentColor,
+        fontSize: 24.0,
+        fontWeight: FontWeight.bold,
+        fontStyle: FontStyle.italic);
+
+    return Padding(
+        padding: EdgeInsets.only(bottom: 15.0),
+        child: Column(
+          children: [
+            Text("Your goal: transform MI into MU via the rules:",
+                style: const TextStyle(
+                  fontSize: 20.0,
+                  fontStyle: FontStyle.italic,
+                )),
+            Text(
+              "Rule I: if I is the last letter, add U.",
+              style: _applicableRule == Rule.one ? _selectedRuleTextStyle : _ruleTextStyle,
+            ),
+            Text(
+              "Rule II: M followed by letters, appends letters.",
+              style: _applicableRule == Rule.two ? _selectedRuleTextStyle : _ruleTextStyle,
+            ),
+            Text(
+              "Rule III: III may be replaced by U.",
+              style: _applicableRule == Rule.three ? _selectedRuleTextStyle : _ruleTextStyle,
+            ),
+            Text(
+              "Rule IV: UU can be dropped.",
+              style: _applicableRule == Rule.four ? _selectedRuleTextStyle : _ruleTextStyle,
+            ),
+          ],
+          crossAxisAlignment: CrossAxisAlignment.start,
+        ));
   }
 
   Widget _buildStringView() {
+    final _letterStyle = const TextStyle(fontSize: 32.0);
+
     List<Widget> letters = [];
     _puzzleState.letterMap.forEach((index, letter) {
       letters.add(FlatButton(
         child: Text(letter, style: _letterStyle),
-        color: index == _selectedLetter ? Colors.orange : Colors.white,
+        color: index == _selectedLetter
+            ? Theme.of(context).primaryColor
+            : Theme.of(context).scaffoldBackgroundColor,
         onPressed: () {
           if (_selectedLetter == index) {
             setState(() {
@@ -270,14 +275,15 @@ class _GameState extends State<GamePage> {
 
     return Container(
       child: ListView(scrollDirection: Axis.horizontal, children: letters),
+      color: Theme.of(context).scaffoldBackgroundColor,
       padding: EdgeInsets.symmetric(horizontal: 30),
-      height: 100,
+      height: 80,
     );
   }
 
   Widget _buildInstructions() {
     return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        padding: EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 0),
         child: Row(children: [
           Expanded(
             child: Column(
